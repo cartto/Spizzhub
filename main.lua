@@ -1,5 +1,4 @@
 --UNIVERSAL VERSION
-getgenv().AllowDecompiler = true
 _G.flykey = "V"
 _G.remote = nil
 _G.oldremote = nil
