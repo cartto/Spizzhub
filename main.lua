@@ -1,4 +1,5 @@
 --UNIVERSAL VERSION
+getgenv().AllowDecompiler = true
 _G.flykey = "V"
 _G.remote = nil
 _G.oldremote = nil
@@ -607,6 +608,27 @@ local misc = Section:Tab({
 })
 
 misc:Button({
+    Title = "Join Prison Life",
+    Callback = function()
+        game:GetService("TeleportService"):Teleport(155615604, selfgetplayer())
+    end
+})
+
+misc:Button({
+    Title = "Join BasePlate",
+    Callback = function()
+        game:GetService("TeleportService"):Teleport(95206881, selfgetplayer())
+    end
+})
+
+misc:Button({
+    Title = "Kick Yourself (idiot)",
+    Callback = function()
+        selfgetplayer():Kick("click leave to leave stupid fuck")
+    end
+})
+
+misc:Button({
     Title = "Credits",
     Callback = function()
         WindUI:Popup({
@@ -626,5 +648,5 @@ misc:Button({
 
 misc:Paragraph({
     Title = "--> TODO <--",
-    Desc = "add a scripts tab so u can see every script and decompile it\nmaybe a garbage collection scanner"
+    Desc = "maybe a garbage collection scanner"
 })
