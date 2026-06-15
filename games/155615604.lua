@@ -41,7 +41,6 @@ function GetEquipedWeapon(char, GunsInPL)
     end
 end
 
-
 function GetClosestPlayer(maxDistance)
 	local closestPlayer = nil
 	local closestDistance = maxDistance or math.huge
@@ -88,6 +87,17 @@ function GetPlayerAttribute(attribute)
     end)
 end
 
+
+function valueToString(v)
+    if typeof(v) == "Instance" then
+        return "game." .. v:GetFullName()
+    elseif type(v) == "string" then
+        return string.format("%q", v)
+    else
+        return tostring(v)
+    end
+end
+
 function tableToString(t, indent, visited)
     indent = indent or 0
     visited = visited or {}
@@ -109,7 +119,6 @@ function tableToString(t, indent, visited)
     end
     visited[t] = true
 
-    -- check if table is empty
     local isEmpty = next(t) == nil
     if isEmpty then
         return "{}"
@@ -118,20 +127,20 @@ function tableToString(t, indent, visited)
     local str = "{\n"
 
     for k, v in pairs(t) do
-        if type(v) == "table" then
-            str ..= string.rep(" ", indent + 2)
-                .. formatKey(k)
-                .. " = "
-                .. tableToString(v, indent + 2, visited)
-                .. "\n"
-        else
-            str ..= string.rep(" ", indent + 2)
-                .. formatKey(k)
-                .. " = "
-                .. tostring(v)
-                .. "\n"
+    if type(v) == "table" then
+        str ..= string.rep(" ", indent + 2)
+            .. formatKey(k)
+            .. " = "
+            .. tableToString(v, indent + 2, visited)
+            .. "\n"
+    else
+        str ..= string.rep(" ", indent + 2)
+            .. formatKey(k)
+            .. " = "
+            .. valueToString(v)
+            .. "\n"
+            end
         end
-    end
 
     str ..= string.rep(" ", indent) .. "}"
     return str
@@ -140,7 +149,7 @@ end
 local WindUI = loadstring(game:HttpGet("https://github.com/Footagesus/WindUI/releases/latest/download/main.lua"))()
 local Window = WindUI:CreateWindow({
     Title = "Vlluu",
-    Icon = "rocket", -- lucide icon
+    Icon = "rocket",
     Author = "by spizzers",
     Folder = "hc",
 	KeySystem = {
@@ -296,13 +305,11 @@ function AddSection(plr)
     local plr_info = plr_section:Paragraph({
         Title = "--> Player Info <--",
         Desc = ""
-    })
+    })    
 
-    
+   pcall(function()  task.spawn(function() while true do wait()  plr_info:SetDesc("Team: "..(plr.Team.Name).."\nHealth: "..(getchar(plr).Humanoid.Health)) end end) end)
 
-    task.spawn(function() while true do wait()  plr_info:SetDesc("Team: "..(plr.Team.Name).."\nHealth: "..(getchar(plr).Humanoid.Health)) end end)
-    
-    plr_section:Button({
+   plr_section:Button({
         Title = "Teleport To",
         Desc = "",
         Callback = function()
@@ -377,7 +384,6 @@ local debugger = Section:Tab({
     Icon = "terminal",
     Locked = false,
 })
-
 
 
 _G.spyenabled = false
@@ -461,11 +467,11 @@ task.spawn(function()
                 Opened = false
             })
 
-            local var1 = "local args = "..tableToString(data.Args).."\n"
+            local var1 = "local contents = "..tableToString(data.Args).."\n"
 
             local script =
-                "local remote = "..data.Remote:GetFullName()..
-                "\nremote:"..data.Method.."(table.unpack(args))"
+                "local remote = game."..data.Remote:GetFullName()..
+                "\nremote:"..data.Method.."(table.unpack(contents))"
 
             remoteView:Code({
                 Title = "args",
@@ -920,3 +926,48 @@ WeaponCheats:Toggle({
         end)
     end
 })
+
+WeaponCheats:Divider()
+
+local giver = WeaponCheats:Section({
+    Title = "Giver",
+})
+
+local Meshes = {
+    ["Remington 870"] = "Meshes/r870_2",
+    ["MP5"] = "Meshes/MP5 (2)",
+    ["Revolver"] = "Meshes/revolver (3)",
+    ["M4A1"] = "Mesh"
+}
+
+function GrabGun(gunname, path2)
+    --spizzhub v1
+    local contents = {
+        [1] = game.Workspace.Prison_ITEMS.giver[gunname][path2]
+    }
+        
+    local remote = game.ReplicatedStorage.Remotes.InteractWithItem
+    remote:InvokeServer(table.unpack(contents))
+end
+
+
+
+function CreateGiverButtons(i, gunname, loc)
+    if i == gunname then
+        giver:Button({
+        Title = tostring(i),
+        Callback = function()
+                selfgetchar().HumanoidRootPart.CFrame = loc
+                wait(1)
+                for i = 1,100 do GrabGun(gunname, Meshes[gunname]) end
+            end
+        })
+    end
+end
+
+iter(GunsInPL, function(i, v)
+    CreateGiverButtons(i, "MP5", CFrame.new(816, 98, 2222))
+    CreateGiverButtons(i, "Remington 870", CFrame.new(816, 98, 2222))
+    CreateGiverButtons(i, "M4A1", CFrame.new(847, 98, 2222))
+    CreateGiverButtons(i, "Revolver", CFrame.new(828, 98, 2222))
+end)
