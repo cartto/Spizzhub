@@ -1,10 +1,10 @@
 --UNIVERSAL VERSION
-
+getgenv().AllowDecompiler = true
 _G.flykey = "V"
-
 _G.remote = nil
 _G.oldremote = nil
 _G.debounced = false
+_G.fly = false
 
 function selfgetplayer()
     return game.Players.LocalPlayer
@@ -31,6 +31,32 @@ function flight(delta)
     if UserInputService:IsKeyDown(Enum.KeyCode.W) then velocity = velocity + workspace.CurrentCamera.CFrame.LookVector * FlightSpeed end
     if UserInputService:IsKeyDown(Enum.KeyCode.S) then velocity = velocity - workspace.CurrentCamera.CFrame.LookVector * FlightSpeed end
     if rootPart then rootPart.Velocity = velocity end
+end
+
+function GetClosestPlayer(maxDistance)
+	local closestPlayer = nil
+	local closestDistance = maxDistance or math.huge
+	local character = game.Players.LocalPlayer.Character
+	if not character then
+		return nil
+	end
+	local root = character:FindFirstChild("HumanoidRootPart")
+	if not root then
+		return nil
+	end
+	for _, player in ipairs(game.Players:GetPlayers()) do
+		if player ~= game.Players.LocalPlayer and player.Character then
+			local targetRoot = player.Character:FindFirstChild("HumanoidRootPart")
+			if targetRoot then
+				local distance = (root.Position - targetRoot.Position).Magnitude
+				if distance < closestDistance then
+					closestDistance = distance
+					closestPlayer = player
+				end
+			end
+		end
+	end
+	return closestPlayer
 end
 
 
@@ -190,29 +216,17 @@ main:Toggle({
 })
 
 main:Toggle({
-    Title = "Fly/Vfly",
-    Desc = "Fly or Vfly works as both",
+    Title = "Fly",
     Type = "Checkbox",
     Value = false,
     Callback = function(state)
-        local FlyKey = Enum.KeyCode[_G.flykey]
-        local FlightSpeed = 256
-        local UserInputService = game:GetService("UserInputService")
-        local RunService = game:GetService("RunService")
-        local player = game.Players.LocalPlayer
-        local character = player.Character or player.CharacterAdded:Wait()
-        local rootPart = character:WaitForChild("HumanoidRootPart")
-        local flyingConnection
-
-
-        UserInputService.InputBegan:Connect(function(input)
-            if input.KeyCode == FlyKey and state then
-                if flyingConnection then flyingConnection:Disconnect() flyingConnection = nil
-                else flyingConnection = RunService.Heartbeat:Connect(flight) end
-            end
-        end)
+		_G.fly = state
     end
 })
+
+-- velo fly script
+local a=game:GetService("Players")local b=game:GetService("RunService")local c=game:GetService("UserInputService")local d=a.LocalPlayer;local e=d.Character or d.CharacterAdded:Wait()local f=e:WaitForChild("Humanoid")local g=e:WaitForChild("HumanoidRootPart")local h=false;local i=100;local j=1000;local k=0.4;local l=workspace.Gravity;d.CharacterAdded:Connect(function(m)e=m;f=e:WaitForChild("Humanoid")g=e:WaitForChild("HumanoidRootPart")end)local function n(o,p)return o+o*math.random(-p,p)/100 end;local function q()while h do local r=Vector3.new()local s=workspace.CurrentCamera.CFrame;r=r+(c:IsKeyDown(Enum.KeyCode.W)and s.LookVector or Vector3.new())r=r-(c:IsKeyDown(Enum.KeyCode.S)and s.LookVector or Vector3.new())r=r-(c:IsKeyDown(Enum.KeyCode.A)and s.RightVector or Vector3.new())r=r+(c:IsKeyDown(Enum.KeyCode.D)and s.RightVector or Vector3.new())r=r+(c:IsKeyDown(Enum.KeyCode.Space)and Vector3.new(0,1,0)or Vector3.new())r=r-(c:IsKeyDown(Enum.KeyCode.LeftShift)and Vector3.new(0,1,0)or Vector3.new())if r.Magnitude>0 then i=math.min(i+k,j)r=r.Unit*math.min(n(i,10),j)g.Velocity=r*0.5 else g.Velocity=Vector3.new(0,0,0)end;b.RenderStepped:Wait()end end;c.InputBegan:Connect(function(t,u)if not u and t.KeyCode==Enum.KeyCode[_G.flykey]and _G.fly then h=not h;if h then workspace.Gravity=0;q()else i=100;g.Velocity=Vector3.new(0,0,0)workspace.Gravity=l end end end)
+
 
 main:Keybind({
     Title = "Fly bind",
@@ -579,11 +593,13 @@ end
 
 
 
-
-scan(selfgetchar())
-scan(selfgetplayer())
-scan(game.ReplicatedStorage)
-scan(game.Workspace)
+--> decompiler scanner <--
+if getgenv().AllowDecompiler then
+	scan(selfgetchar())
+	scan(selfgetplayer())
+	scan(game.ReplicatedStorage)
+	scan(game.Workspace)
+end
 
 -- > misc < --
 local misc = Section:Tab({
