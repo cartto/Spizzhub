@@ -626,6 +626,27 @@ local misc = Section:Tab({
 })
 
 misc:Button({
+    Title = "Join Prison Life",
+    Callback = function()
+        game:GetService("TeleportService"):Teleport(155615604, selfgetplayer())
+    end
+})
+
+misc:Button({
+    Title = "Join BasePlate",
+    Callback = function()
+        game:GetService("TeleportService"):Teleport(95206881, selfgetplayer())
+    end
+})
+
+misc:Button({
+    Title = "Kick Yourself (idiot)",
+    Callback = function()
+        selfgetplayer():Kick("click leave to leave stupid fuck")
+    end
+})
+
+misc:Button({
     Title = "Credits",
     Callback = function()
         WindUI:Popup({
