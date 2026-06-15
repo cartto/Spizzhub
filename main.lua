@@ -1,5 +1,7 @@
 --UNIVERSAL VERSION
 getgenv().AllowDecompiler = true
+getgenv().SpizzhubVersion = 1.12
+
 _G.flykey = "V"
 _G.remote = nil
 _G.oldremote = nil
@@ -66,6 +68,16 @@ function iter(l, callback)
     end
 end
 
+function valueToString(v)
+    if typeof(v) == "Instance" then
+        return "game." .. v:GetFullName()
+    elseif type(v) == "string" then
+        return string.format("%q", v)
+    else
+        return tostring(v)
+    end
+end
+
 function tableToString(t, indent, visited)
     indent = indent or 0
     visited = visited or {}
@@ -87,7 +99,6 @@ function tableToString(t, indent, visited)
     end
     visited[t] = true
 
-    -- check if table is empty
     local isEmpty = next(t) == nil
     if isEmpty then
         return "{}"
@@ -96,20 +107,20 @@ function tableToString(t, indent, visited)
     local str = "{\n"
 
     for k, v in pairs(t) do
-        if type(v) == "table" then
-            str ..= string.rep(" ", indent + 2)
-                .. formatKey(k)
-                .. " = "
-                .. tableToString(v, indent + 2, visited)
-                .. "\n"
-        else
-            str ..= string.rep(" ", indent + 2)
-                .. formatKey(k)
-                .. " = "
-                .. tostring(v)
-                .. "\n"
+    if type(v) == "table" then
+        str ..= string.rep(" ", indent + 2)
+            .. formatKey(k)
+            .. " = "
+            .. tableToString(v, indent + 2, visited)
+            .. "\n"
+    else
+        str ..= string.rep(" ", indent + 2)
+            .. formatKey(k)
+            .. " = "
+            .. valueToString(v)
+            .. "\n"
+            end
         end
-    end
 
     str ..= string.rep(" ", indent) .. "}"
     return str
