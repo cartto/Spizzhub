@@ -450,11 +450,11 @@ task.spawn(function()
                 Opened = false
             })
 
-            local var1 = "local args = "..tableToString(data.Args).."\n"
+            local var1 = "local contents = "..tableToString(data.Args).."\n"
 
             local script =
-                "local remote = "..data.Remote:GetFullName()..
-                "\nremote:"..data.Method.."(table.unpack(args))"
+                "local remote = game."..data.Remote:GetFullName()..
+                "\nremote:"..data.Method.."(table.unpack(contents))"
 
             remoteView:Code({
                 Title = "args",
