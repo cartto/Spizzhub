@@ -364,9 +364,9 @@ Window:Tag({
 })
 
 Window:Tag({
-    Title = "v1.0.0",
-    Icon = "github",
-    Color = BrickColor.new("New Yeller").Color,
+    Title = "Ver - Prison Life",
+    Icon = "columns-4",
+    Color = BrickColor.new("Bright orange").Color,
     Radius = 0, -- from 0 to 13
 })
 
