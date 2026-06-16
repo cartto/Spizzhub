@@ -1,6 +1,6 @@
 --UNIVERSAL VERSION
-getgenv().AllowDecompiler = true
-getgenv().AllowDecompilerWorkspace = true;
+--getgenv().AllowDecompiler = true
+--getgenv().AllowDecompilerWorkspace = true;
 
 getgenv().SpizzhubVersion = 1.12
 
