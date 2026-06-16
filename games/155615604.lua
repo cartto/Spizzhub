@@ -625,6 +625,64 @@ if getgenv().AllowDecompiler then
 	scan(game.Workspace)
 end
 
+-- > gc scanner < --
+local gc = Section:Tab({
+    Title = "Garbage Collection",
+    Icon = "trash-2",
+    Locked = false,
+})
+
+gc:Input({
+    Title = "key",
+    InputIcon = "pencil",
+    Type = "Input",
+    Placeholder = "type",
+    Callback = function(input) 
+        _G.gctype = input
+    end
+})
+
+gc:Input({
+    Title = "pair",
+    InputIcon = "pencil",
+    Type = "Input",
+    Placeholder = "tbl pair",
+    Callback = function(input) 
+        _G.gcpair = input
+    end
+})
+
+local gcCodes = {   }
+gc:Button({
+    Title = "Scan",
+    Callback = function()
+        for i,v in pairs(getgc(true)) do
+           if type(v) == _G.gctype and rawget(v, _G.gcpair) ~= nil then
+                 local s1 = gc:Section({
+                    Title = tostring(v)
+                })
+                local c = s1:Code({
+                    Title = "Garbage Collection Scanner",
+                    Code = ""
+                })
+                table.insert(gcCodes, s1)
+                for a,b in pairs(v) do
+                    if a == _G.gcpair then
+                        c:SetCode("--spizzhub v1\nlocal tbl = {}\nreturn tbl."..tostring(a).."\ncurrent val -> "..tostring(b)) 
+                    end
+                end
+           end
+        end
+    end
+})
+
+gc:Button({
+    Title = "Clear Scans",
+    Callback = function()
+        iter(gcCodes, function(i ,v) v:Destroy() end)
+    end
+})
+
 -- > misc < --
 local misc = Section:Tab({
     Title = "Misc",
@@ -937,7 +995,7 @@ local Meshes = {
     ["Remington 870"] = "Meshes/r870_2",
     ["MP5"] = "Meshes/MP5 (2)",
     ["Revolver"] = "Meshes/revolver (3)",
-    ["M4A1"] = "Mesh"
+    ["M4A1"] = "Mesh";
 }
 
 function GrabGun(gunname, path2)
@@ -949,8 +1007,6 @@ function GrabGun(gunname, path2)
     local remote = game.ReplicatedStorage.Remotes.InteractWithItem
     remote:InvokeServer(table.unpack(contents))
 end
-
-
 
 function CreateGiverButtons(i, gunname, loc)
     if i == gunname then
