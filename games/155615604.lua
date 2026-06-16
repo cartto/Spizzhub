@@ -145,7 +145,9 @@ function tableToString(t, indent, visited)
     str ..= string.rep(" ", indent) .. "}"
     return str
 end
+function Announce(a)local b=game.ReplicatedStorage.Scripts.Replication.Announcements;local c=game:GetService("ReplicatedStorage")local d=require(c.SharedModules.TooltipModule)local e=game:GetService("Players").LocalPlayer;local f=e.PlayerGui:findFirstChild("Home")if f then local g=c.gooeys.messageGui:Clone()g.Desc.Text=a;g.Visible=true;g.Parent=f.hud.AnnouncementsFrame;g:TweenPosition(UDim2.new(0.5,0,0.2,0),"Out","Quint",1,false)task.wait(5)g:TweenPosition(UDim2.new(0.5,0,-0.4,0),"In","Quint",1,false)game.Debris:AddItem(g,2)end end
 
+Announce("01 MANIKIN - SPIZZHUB")
 local WindUI = loadstring(game:HttpGet("https://github.com/Footagesus/WindUI/releases/latest/download/main.lua"))()
 local Window = WindUI:CreateWindow({
     Title = "Vlluu",
@@ -571,7 +573,7 @@ bec:Button({
 -- > decompiler < --
 _G.LocalScripts = true
 _G.ModuleScripts = true
-_G.ServerScripts = true
+_G.ServerScripts = false
 
 local dectab = Section:Tab({
     Title = "Scripts",
