@@ -271,6 +271,7 @@ local playerlist = Section:Tab({
 })
 
 local plr_sections = {}
+local plr_divs = {}
 _G.loopgoto = false
 
 function AddSection(plr)
@@ -337,11 +338,14 @@ iter(game.Players:GetPlayers(), function(_, plr)
     if plr.Name ~= selfgetplayer().Name then
     AddSection(plr)
     playerlist:Divider()
+    local div = playerlist:Divider()
+    plr_divs[plr.Name] = div   
    end
 end)
 
 game.Players.PlayerRemoving:Connect(function(plr, exitreason)
     plr_sections[plr.Name]:Destroy()
+    plr_divs[plr.Name]:Destroy()
 end)
 
 game.Players.PlayerAdded:Connect(function(plr)
@@ -700,6 +704,13 @@ misc:Button({
     Title = "Join Prison Life",
     Callback = function()
         game:GetService("TeleportService"):Teleport(155615604, selfgetplayer())
+    end
+})
+
+misc:Button({
+    Title = "Join 2 Player Wizard Tycoon",
+    Callback = function()
+        game:GetService("TeleportService"):Teleport(281489669, selfgetplayer())
     end
 })
 
