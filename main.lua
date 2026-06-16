@@ -1,5 +1,7 @@
 --UNIVERSAL VERSION
 getgenv().AllowDecompiler = true
+getgenv().AllowDecompilerWorkspace = true;
+
 getgenv().SpizzhubVersion = 1.12
 
 _G.flykey = "V"
@@ -245,7 +247,6 @@ main:Keybind({
     Value = "V",
     Callback = function(v)
         _G.flykey = v
-        Window:SetToggleKey(Enum.KeyCode[v])
     end
 })
 
@@ -324,6 +325,13 @@ function AddSection(plr)
                         end
                     end
                 end)
+    
+    plr_section:Button({
+        Title = "Add Highlight",
+        Callback = function()
+            local h = Instance.new("Highlight", getchar(plr))
+        end
+    })
 
     plr_sections[plr.Name] = plr_section
 end
@@ -568,17 +576,20 @@ function isAllowed(v)
 end
 
 function addScript(v, codetext)
-    local decompiled_code = "--Not Decompiled\nreturn nil,nil"
+    local decompiled_code
+    
     local allscripts = dectab:Section({
         Title = v.Name,
-        Desc = v.ClassName,
         Box = true,
         Opened = false,
+        TextSize = 14
     })
 
+    local str = tostring(v.ClassName) .. " > game.".. tostring(v:GetFullName()) .."\n" 
+    function checkdecCode(a) if a == nil then return "" else return tostring(a) end end
     local dc = allscripts:Code({
         Title = "Decompiled Source",
-        Code = tostring(decompiled_code)
+        Code = str .. checkdecCode(decompiled_code)
     })
 
     allscripts:Button({
@@ -601,21 +612,33 @@ function scan(container)
     end)
 end
 
-
-
-
 --> decompiler scanner <--
 if getgenv().AllowDecompiler then
 	scan(selfgetchar())
 	scan(selfgetplayer())
 	scan(game.ReplicatedStorage)
-	scan(game.Workspace)
+	if getgenv().AllowDecompilerWorkspace then scan(game.Workspace) end
 end
 
 -- > misc < --
 local misc = Section:Tab({
     Title = "Misc",
     Icon = "info",
+})
+
+misc:Keybind({
+    Title = "Open/Close",
+    Value = "P",
+    Callback = function(v)
+        Window:SetToggleKey(Enum.KeyCode[v])
+    end
+})
+
+misc:Button({
+    Title = "Rejoin",
+    Callback = function()
+		game:GetService("TeleportService"):Teleport(game.PlaceId)
+    end
 })
 
 misc:Button({
@@ -660,4 +683,12 @@ misc:Button({
 misc:Paragraph({
     Title = "--> TODO <--",
     Desc = "maybe a garbage collection scanner"
+})
+
+
+WindUI:Notify({
+    Title = "Finished Loading",
+    Content = "Script Finished loading!",
+    Duration = 3, -- 3 seconds
+    Icon = "check",
 })
