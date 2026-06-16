@@ -1,5 +1,6 @@
 local games = {
     [155615604] = true;
+	[281489669] = true;
 }
 
 function importFromWeb(folder, file)
