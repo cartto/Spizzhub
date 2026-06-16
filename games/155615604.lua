@@ -571,7 +571,7 @@ bec:Button({
 -- > decompiler < --
 _G.LocalScripts = true
 _G.ModuleScripts = true
-_G.ServerScripts = false
+_G.ServerScripts = true
 
 local dectab = Section:Tab({
     Title = "Scripts",
