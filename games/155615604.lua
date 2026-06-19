@@ -352,13 +352,21 @@ function AddSection(plr)
         end
     })
 
+    plr_section:Button({
+        Title = "Arrest",
+        Callback = function()
+            local contents = {[1] = plr,[2] = 1}
+            local remote = game.ReplicatedStorage.Remotes.ArrestPlayer
+            for i = 1,5 do  selfgetchar().HumanoidRootPart.CFrame = getchar(plr).HumanoidRootPart.CFrame remote:InvokeServer(table.unpack(contents)) end
+        end
+    })
+
     plr_sections[plr.Name] = plr_section
 end
 
 iter(game.Players:GetPlayers(), function(_, plr)
     if plr.Name ~= selfgetplayer().Name then
     AddSection(plr)
-    playerlist:Divider()
     local div = playerlist:Divider()
     plr_divs[plr.Name] = div   
    end
