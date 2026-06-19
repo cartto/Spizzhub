@@ -128,6 +128,24 @@ function tableToString(t, indent, visited)
     return str
 end
 
+function GetEquipedWeapon(char, whitelist)
+    if not char then return nil end
+
+    for _, v in pairs(char:GetChildren()) do
+        if v:IsA("Tool") then
+            if not whitelist then
+                return v.Name
+            end
+
+            if whitelist[v.Name] then
+                return v.Name
+            end
+        end
+    end
+
+    return nil
+end
+
 local WindUI = loadstring(game:HttpGet("https://github.com/Footagesus/WindUI/releases/latest/download/main.lua"))()
 local Window = WindUI:CreateWindow({
     Title = "Vlluu",
@@ -1223,7 +1241,13 @@ WeaponCheats:Slider({
         end
     end
 })
-
+task.spawn(function()
+    while true do wait()
+        pcall(function()
+            selfgetchar()[GetEquipedWeapon(selfgetchar(), GunsInPL)]:SetAttribute("FireRate", _G.firerate)
+        end)
+    end
+end)
 
 _G.af = false
 WeaponCheats:Toggle({
