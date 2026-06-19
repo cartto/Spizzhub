@@ -373,7 +373,7 @@ Window:Tag({
 })
 
 Window:Tag({
-    Title = "Ver - Prison Life",
+    Title = "Version - Prison Life",
     Icon = "columns-4",
     Color = BrickColor.new("Bright orange").Color,
     Radius = 0, -- from 0 to 13
