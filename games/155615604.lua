@@ -1,9 +1,14 @@
 --PRISON LIFE VERSION
-_G.flykey = "F"
+getgenv().SpizzhubVersion = 2.0
+
 _G.remote = nil
 _G.oldremote = nil
 _G.debounced = false
 _G.fly = false
+
+local web = {}
+local ret = {}
+local headers = {  }
 
 function selfgetplayer()
     return game.Players.LocalPlayer
@@ -25,20 +30,11 @@ function HasRemoteUpdated(remote, oldremote)
     end
 end
 
-function iter(l, callback)
-    for i,v in pairs(l) do
-        callback(i,v)
-    end
-end
-
-function GetEquipedWeapon(char, GunsInPL)
-    for i,v in pairs(char:GetChildren()) do
-      for i2,v2 in pairs(GunsInPL) do
-              if v.Name == i2 then
-                return v.Name
-            end
-        end
-    end
+function flight(delta)
+    local velocity = Vector3.new(0,0,0)
+    if UserInputService:IsKeyDown(Enum.KeyCode.W) then velocity = velocity + workspace.CurrentCamera.CFrame.LookVector * FlightSpeed end
+    if UserInputService:IsKeyDown(Enum.KeyCode.S) then velocity = velocity - workspace.CurrentCamera.CFrame.LookVector * FlightSpeed end
+    if rootPart then rootPart.Velocity = velocity end
 end
 
 function GetClosestPlayer(maxDistance)
@@ -67,26 +63,12 @@ function GetClosestPlayer(maxDistance)
 	return closestPlayer
 end
 
-function SetPlayerAttribute(state, value)
-    iter(getgc(true), function(_, v)
-        if type(v) == "table" and rawget(v, "isFighting") ~= nil then
-            if type(attribute) == "string" then
-                v[attribute] = value
-            end
-        end
-    end)
-end
 
-function GetPlayerAttribute(attribute)
-    iter(getgc(true), function(_, v)
-        if type(v) == "table" and rawget(v, "isFighting") ~= nil then
-            if type(attribute) == "string" then
-                return v[attribute]
-            end
-        end
-    end)
+function iter(l, callback)
+    for i,v in pairs(l) do
+        callback(i,v)
+    end
 end
-
 
 function valueToString(v)
     if typeof(v) == "Instance" then
@@ -145,13 +127,11 @@ function tableToString(t, indent, visited)
     str ..= string.rep(" ", indent) .. "}"
     return str
 end
-function Announce(a)local b=game.ReplicatedStorage.Scripts.Replication.Announcements;local c=game:GetService("ReplicatedStorage")local d=require(c.SharedModules.TooltipModule)local e=game:GetService("Players").LocalPlayer;local f=e.PlayerGui:findFirstChild("Home")if f then local g=c.gooeys.messageGui:Clone()g.Desc.Text=a;g.Visible=true;g.Parent=f.hud.AnnouncementsFrame;g:TweenPosition(UDim2.new(0.5,0,0.2,0),"Out","Quint",1,false)task.wait(5)g:TweenPosition(UDim2.new(0.5,0,-0.4,0),"In","Quint",1,false)game.Debris:AddItem(g,2)end end
 
-Announce("01 MANIKIN - SPIZZHUB")
 local WindUI = loadstring(game:HttpGet("https://github.com/Footagesus/WindUI/releases/latest/download/main.lua"))()
 local Window = WindUI:CreateWindow({
     Title = "Vlluu",
-    Icon = "rocket",
+    Icon = "rocket", -- lucide icon
     Author = "by spizzers",
     Folder = "hc",
 	KeySystem = {
@@ -248,7 +228,6 @@ main:Toggle({
     end
 })
 
-
 main:Toggle({
     Title = "Fly",
     Type = "Checkbox",
@@ -295,6 +274,7 @@ local playerlist = Section:Tab({
 })
 
 local plr_sections = {}
+local plr_divs = {}
 _G.loopgoto = false
 
 function AddSection(plr)
@@ -307,11 +287,13 @@ function AddSection(plr)
     local plr_info = plr_section:Paragraph({
         Title = "--> Player Info <--",
         Desc = ""
-    })    
+    })
 
-   pcall(function()  task.spawn(function() while true do wait()  plr_info:SetDesc("Team: "..(plr.Team.Name).."\nHealth: "..(getchar(plr).Humanoid.Health)) end end) end)
+    
 
-   plr_section:Button({
+    task.spawn(function() while true do wait()  plr_info:SetDesc("Team: "..(plr.Team.Name).."\nHealth: "..(getchar(plr).Humanoid.Health)) end end)
+    
+    plr_section:Button({
         Title = "Teleport To",
         Desc = "",
         Callback = function()
@@ -344,6 +326,13 @@ function AddSection(plr)
                         end
                     end
                 end)
+    
+    plr_section:Button({
+        Title = "Add Highlight",
+        Callback = function()
+            local h = Instance.new("Highlight", getchar(plr))
+        end
+    })
 
     plr_sections[plr.Name] = plr_section
 end
@@ -352,17 +341,19 @@ iter(game.Players:GetPlayers(), function(_, plr)
     if plr.Name ~= selfgetplayer().Name then
     AddSection(plr)
     playerlist:Divider()
+    local div = playerlist:Divider()
+    plr_divs[plr.Name] = div   
    end
 end)
 
 game.Players.PlayerRemoving:Connect(function(plr, exitreason)
     plr_sections[plr.Name]:Destroy()
+    plr_divs[plr.Name]:Destroy()
 end)
 
 game.Players.PlayerAdded:Connect(function(plr)
      AddSection(plr)
 end)
-
 
 
 -- > tags < --
@@ -393,9 +384,9 @@ function dotags(s)
     })
 
     sg2=Window:Tag({
-        Title = "v1.0.0",
-        Icon = "github",
-        Color = BrickColor.new("New Yeller").Color,
+        Title = "Version - Prison Life",
+        Icon = "columns-4",
+        Color = BrickColor.new("Bright orange").Color,
         Radius = 0, -- from 0 to 13
     })
     
@@ -643,13 +634,13 @@ if getgenv().spotifyenabled then
     end)()
 
 end
---> debugger < --
+
+-- > debugger < --
 local debugger = Section:Tab({
     Title = "Debugger",
     Icon = "terminal",
     Locked = false,
 })
-
 
 _G.spyenabled = false
 _G.FireServer = true
@@ -850,17 +841,20 @@ function isAllowed(v)
 end
 
 function addScript(v, codetext)
-    local decompiled_code = "--Not Decompiled\nreturn nil,nil"
+    local decompiled_code
+    
     local allscripts = dectab:Section({
         Title = v.Name,
-        Desc = v.ClassName,
         Box = true,
         Opened = false,
+        TextSize = 14
     })
 
+    local str = tostring(v.ClassName) .. " > game.".. tostring(v:GetFullName()) .."\n" 
+    function checkdecCode(a) if a == nil then return "" else return tostring(a) end end
     local dc = allscripts:Code({
         Title = "Decompiled Source",
-        Code = tostring(decompiled_code)
+        Code = str .. checkdecCode(decompiled_code)
     })
 
     allscripts:Button({
@@ -883,11 +877,12 @@ function scan(container)
     end)
 end
 
+--> decompiler scanner <--
 if getgenv().AllowDecompiler then
 	scan(selfgetchar())
 	scan(selfgetplayer())
 	scan(game.ReplicatedStorage)
-	scan(game.Workspace)
+	if getgenv().AllowDecompilerWorkspace then scan(game.Workspace) end
 end
 
 -- > gc scanner < --
@@ -954,10 +949,32 @@ local misc = Section:Tab({
     Icon = "info",
 })
 
+misc:Keybind({
+    Title = "Open/Close",
+    Value = "P",
+    Callback = function(v)
+        Window:SetToggleKey(Enum.KeyCode[v])
+    end
+})
+
+misc:Button({
+    Title = "Rejoin",
+    Callback = function()
+		game:GetService("TeleportService"):Teleport(game.PlaceId)
+    end
+})
+
 misc:Button({
     Title = "Join Prison Life",
     Callback = function()
         game:GetService("TeleportService"):Teleport(155615604, selfgetplayer())
+    end
+})
+
+misc:Button({
+    Title = "Join 2 Player Wizard Tycoon",
+    Callback = function()
+        game:GetService("TeleportService"):Teleport(281489669, selfgetplayer())
     end
 })
 
@@ -995,10 +1012,16 @@ misc:Button({
 
 misc:Paragraph({
     Title = "--> TODO <--",
-    Desc = "add a scripts tab so u can see every script and decompile it\nmaybe a garbage collection scanner"
+    Desc = "maybe a garbage collection scanner"
 })
 
 
+WindUI:Notify({
+    Title = "Finished Loading",
+    Content = "Script Finished loading!",
+    Duration = 3, -- 3 seconds
+    Icon = "check",
+})
 
 -- > main cheats < --
 local Cheats = Window:Section({
