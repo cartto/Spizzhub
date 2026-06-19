@@ -384,7 +384,7 @@ function dotags(s)
     })
 
     sg2=Window:Tag({
-        Title = "v1.0.0",
+        Title = "v2.0.0",
         Icon = "github",
         Color = BrickColor.new("New Yeller").Color,
         Radius = 0, -- from 0 to 13
