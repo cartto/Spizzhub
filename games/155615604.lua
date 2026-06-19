@@ -364,255 +364,285 @@ game.Players.PlayerAdded:Connect(function(plr)
 end)
 
 
+
 -- > tags < --
-Window:Tag({
+local sg
+local sg1
+local sg2
+function dotags(s)
+    if sg and getgenv().spotifyenabled then
+        sg:Destroy()
+        sg1:Destroy()
+        sg2:Destroy()
+    end
+
+    if getgenv().spotifyenabled then
+         sg = Window:Tag({
+            Title = "Song - ".. tostring(s.song),
+            Icon = "music",
+            Color = BrickColor.new("Lime green").Color,
+            Radius = 0
+            })
+    end
+
+    sg1=Window:Tag({
     Title = game.Players.LocalPlayer.Name .. " is playing!",
     Icon = "signal",
     Color = BrickColor.new("Dark red").Color,
     Radius = 0, -- from 0 to 13
-})
-
-Window:Tag({
-    Title = "Version - Prison Life",
-    Icon = "columns-4",
-    Color = BrickColor.new("Bright orange").Color,
-    Radius = 0, -- from 0 to 13
-})
-
-
--- > Spotify < --
-local web = {}
-local ret = {}
-local headers = {  }
-headers["Authorization"] = "Bearer ".. getgenv().authcode
-
-function RequestInfo(ret)
-    local response = request({
-        Url = "https://api.spotify.com/v1/me/player/currently-playing",
-        Method = "GET",
-        Headers = headers
     })
 
-    if response.StatusCode ~= 200 then
+    sg2=Window:Tag({
+        Title = "v1.0.0",
+        Icon = "github",
+        Color = BrickColor.new("New Yeller").Color,
+        Radius = 0, -- from 0 to 13
+    })
+    
+end
+
+task.spawn(function()
+    while true do task.wait(1)
+       if getgenv().spotifyenabled then
+         dotags(ret, getgenv().spotifyenabled)
+       else
+         dotags(ret, getgenv().spotifyenabled)
+         break;
+        end
+    end
+end)
+
+
+if getgenv().spotifyenabled then
+    -- > Spotify < --
+    headers["Authorization"] = "Bearer ".. getgenv().authcode
+
+    function RequestInfo(ret)
+        local response = request({
+            Url = "https://api.spotify.com/v1/me/player/currently-playing",
+            Method = "GET",
+            Headers = headers
+        })
+
+        if response.StatusCode ~= 200 then
+            return ret
+        end
+
+        local data = game:GetService("HttpService"):JSONDecode(response.Body)
+
+        if not data then
+            warn("NO DATA")
+            return ret
+        end
+
+        if not data.item then
+            warn("NO ITEM")
+            return ret
+        end
+
+    
+    
+        ret.song = data.item.name or "Unknown"
+        ret.albumName = (data.item.album and data.item.album.name) or "Unknown"
+
+        if data.item.artists then
+            ret.currartists = data.item.artists
+        else
+            warn("NO ARTISTS FIELD")
+            ret.currartists = {}
+        end
+
+        ret.coverurl =
+            (data.item.album and data.item.album.images and data.item.album.images[1] and data.item.album.images[1].url)
+            or nil
+
         return ret
     end
 
-    local data = game:GetService("HttpService"):JSONDecode(response.Body)
+    local HttpService = game:GetService("HttpService")
 
-    if not data then
-        warn("NO DATA")
-        return ret
+    function web:searchtrack(trackName)
+        local url = "https://api.spotify.com/v1/search?q=" ..
+            HttpService:UrlEncode(trackName) ..
+            "&type=track&limit=1"
+
+        local response = request({
+            Url = url,
+            Method = "GET",
+            Headers = {
+                ["Authorization"] = "Bearer " .. getgenv().authcode
+            }
+        })
+
+        local data = HttpService:JSONDecode(response.Body)
+        local item = data.tracks.items[1]
+
+        if not item then
+            return nil
+        end
+
+        return item.uri -- spotify:track:ID
     end
 
-    if not data.item then
-        warn("NO ITEM")
-        return ret
+    function web:addtoqueue(trackUri)
+        if not trackUri then
+            warn("No track URI")
+            return
+        end
+
+        local url = "https://api.spotify.com/v1/me/player/queue?uri=" ..
+            HttpService:UrlEncode(trackUri)
+
+        local response = request({
+            Url = url,
+            Method = "POST",
+            Headers = {
+                ["Authorization"] = "Bearer " .. getgenv().authcode
+            }
+        })
+
+        warn(response.StatusCode, response.Body)
     end
 
-   
-   
-    ret.song = data.item.name or "Unknown"
-    ret.albumName = (data.item.album and data.item.album.name) or "Unknown"
-
-    if data.item.artists then
-        ret.currartists = data.item.artists
-    else
-        warn("NO ARTISTS FIELD")
-        ret.currartists = {}
+    function web:skip()
+        local response = request({
+            Url = "https://api.spotify.com/v1/me/player/next",
+            Method = "POST",
+            Headers = headers
+        })
     end
 
-    ret.coverurl =
-        (data.item.album and data.item.album.images and data.item.album.images[1] and data.item.album.images[1].url)
-        or nil
+    function web:previous()
+    request({
+            Url = "https://api.spotify.com/v1/me/player/previous",
+            Method = "POST",
+            Headers = headers
+        })
+    end
 
-    return ret
-end
+    function web:updatevolume(vol)
+        request({
+            Url = "https://api.spotify.com/v1/me/player/volume?volume_percent=" .. tonumber(vol),
+            Method = "PUT",
+            Headers = headers
+        })
+    end
 
-local HttpService = game:GetService("HttpService")
-
-function web:searchtrack(trackName)
-    local url = "https://api.spotify.com/v1/search?q=" ..
-        HttpService:UrlEncode(trackName) ..
-        "&type=track&limit=1"
-
-    local response = request({
-        Url = url,
-        Method = "GET",
-        Headers = {
-            ["Authorization"] = "Bearer " .. getgenv().authcode
-        }
+    local spotify = Section:Tab({
+        Title = "Spotify",
+        Icon = "music",
+        Locked = false,
     })
 
-    local data = HttpService:JSONDecode(response.Body)
-    local item = data.tracks.items[1]
-
-    if not item then
-        return nil
-    end
-
-    return item.uri -- spotify:track:ID
-end
-
-function web:addtoqueue(trackUri)
-    if not trackUri then
-        warn("No track URI")
-        return
-    end
-
-    local url = "https://api.spotify.com/v1/me/player/queue?uri=" ..
-        HttpService:UrlEncode(trackUri)
-
-    local response = request({
-        Url = url,
-        Method = "POST",
-        Headers = {
-            ["Authorization"] = "Bearer " .. getgenv().authcode
-        }
+    local sp1 = spotify:Paragraph({
+        Title = "Loading...",
+        Image = ""
     })
 
-    warn(response.StatusCode, response.Body)
-end
-
-function web:skip()
-    local response = request({
-        Url = "https://api.spotify.com/v1/me/player/next",
-        Method = "POST",
-        Headers = headers
+    spotify:Button({
+        Title = "Next Song",
+        Callback = function()
+            web:skip()
+        end
     })
-end
 
-function web:previous()
- request({
-        Url = "https://api.spotify.com/v1/me/player/previous",
-        Method = "POST",
-        Headers = headers
+    spotify:Button({
+        Title = "Previous Song",
+        Callback = function()
+            web:previous()
+        end
     })
-end
 
-function web:updatevolume(vol)
-     request({
-        Url = "https://api.spotify.com/v1/me/player/volume?volume_percent=" .. tonumber(vol),
-        Method = "PUT",
-        Headers = headers
+    _G.volval = 100
+    spotify:Slider({
+        Title = "Volume",
+        Step = 1,
+        Value = {
+            Min = 1,
+            Max = 100,
+            Default = 100,
+        },
+        Callback = function(value)
+            _G.volval = value
+        end
     })
+
+    spotify:Button({
+        Title = "Set Volume",
+        Callback = function()
+            web:updatevolume(_G.volval)
+        end
+    })
+
+    spotify:Input({
+        Title = "Search song",
+        Callback = function(v)
+            _G.searched = v
+        end
+    })
+
+    spotify:Button({
+        Title = "Play Song",
+        Callback = function()
+            local b = web:searchtrack(_G.searched)
+            web:addtoqueue(b)
+            web:skip()
+        end 
+    })
+
+    local oldsong = {}
+    RequestInfo(oldsong)
+    coroutine.wrap(function()
+        while task.wait(3) do
+            local ok, err = pcall(function()
+
+                RequestInfo(ret)
+
+                if not ret.song or not ret.currartists then
+                    return
+                end
+
+                local artists = ret.currartists
+                if type(artists) ~= "table" or #artists == 0 then
+                    return
+                end
+
+            
+                local text = "Playing: " .. tostring(ret.song) .. "\n" ..
+                            tostring(ret.albumName) .. " - "
+
+                if #artists == 1 then
+                    text ..= artists[1].name
+                elseif #artists >= 2 then
+                    text ..= artists[1].name .. " & " .. artists[2].name
+                else
+                    text ..= "Unknown Artist"
+                end
+
+                sp1:SetTitle(text)
+
+                if ret.coverurl then
+                    sp1:SetImage(ret.coverurl)
+                end
+
+                if ret.song ~= oldsong.song then
+                    WindUI:Notify({
+                        Title = "Spizzhub Music Player",
+                        Content = "Now Playing - " .. tostring(ret.song),
+                        Duration = 3,
+                        Icon = "music",
+                    })
+
+                    oldsong.song = ret.song
+                end
+
+            end)
+
+    
+        end
+    end)()
+
 end
-
-local spotify = Section:Tab({
-    Title = "Spotify",
-    Icon = "music",
-    Locked = false,
-})
-
-local sp1 = spotify:Paragraph({
-    Title = "Loading...",
-    Image = ""
-})
-
-spotify:Button({
-    Title = "Next Song",
-    Callback = function()
-        web:skip()
-    end
-})
-
-spotify:Button({
-    Title = "Previous Song",
-    Callback = function()
-        web:previous()
-    end
-})
-
-_G.volval = 100
-spotify:Slider({
-    Title = "Volume",
-    Step = 1,
-    Value = {
-        Min = 1,
-        Max = 100,
-        Default = 100,
-    },
-    Callback = function(value)
-        _G.volval = value
-    end
-})
-
-spotify:Button({
-    Title = "Set Volume",
-    Callback = function()
-        web:updatevolume(_G.volval)
-    end
-})
-
-spotify:Input({
-    Title = "Search song",
-    Callback = function(v)
-        _G.searched = v
-    end
-})
-
-spotify:Button({
-    Title = "Play Song",
-    Callback = function()
-        local b = web:searchtrack(_G.searched)
-        web:addtoqueue(b)
-        web:skip()
-    end 
-})
-
-local oldsong = {}
-RequestInfo(oldsong)
-coroutine.wrap(function()
-    while task.wait(3) do
-        local ok, err = pcall(function()
-
-            RequestInfo(ret)
-
-            if not ret.song or not ret.currartists then
-                return
-            end
-
-            local artists = ret.currartists
-            if type(artists) ~= "table" or #artists == 0 then
-                return
-            end
-
-        
-            local text = "Playing: " .. tostring(ret.song) .. "\n" ..
-                          tostring(ret.albumName) .. " - "
-
-            if #artists == 1 then
-                text ..= artists[1].name
-            elseif #artists >= 2 then
-                text ..= artists[1].name .. " & " .. artists[2].name
-            else
-                text ..= "Unknown Artist"
-            end
-
-            sp1:SetTitle(text)
-
-            if ret.coverurl then
-                sp1:SetImage(ret.coverurl)
-            end
-
-            if ret.song ~= oldsong.song then
-                WindUI:Notify({
-                    Title = "Spizzhub Music Player",
-                    Content = "Now Playing - " .. tostring(ret.song),
-                    Duration = 3,
-                    Icon = "music",
-                })
-
-                oldsong.song = ret.song
-            end
-
-        end)
-
-  
-    end
-end)()
-
--- > debugger < --
-
 --> debugger < --
 local debugger = Section:Tab({
     Title = "Debugger",
