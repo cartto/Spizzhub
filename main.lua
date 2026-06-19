@@ -340,7 +340,6 @@ end
 iter(game.Players:GetPlayers(), function(_, plr)
     if plr.Name ~= selfgetplayer().Name then
     AddSection(plr)
-    playerlist:Divider()
     local div = playerlist:Divider()
     plr_divs[plr.Name] = div   
    end
@@ -404,8 +403,8 @@ task.spawn(function()
 end)
 
 
+-- > Spotify < --
 if getgenv().spotifyenabled then
-    -- > Spotify < --
     headers["Authorization"] = "Bearer ".. getgenv().authcode
 
     function RequestInfo(ret)
